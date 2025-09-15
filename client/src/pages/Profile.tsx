@@ -36,6 +36,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import apiConfig from '../config/api';
 
 interface UserProfile {
   user: {
@@ -126,7 +127,11 @@ const Profile: React.FC = () => {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/users/profile');
+      const response = await axios.get(`${apiConfig.baseURL}/api/users/profile`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       setProfile(response.data);
       setEditForm({
         name: response.data.user.name,
@@ -151,7 +156,11 @@ const Profile: React.FC = () => {
 
   const handleEditProfile = async () => {
     try {
-      await axios.put('/api/auth/profile', editForm);
+      await axios.put(`${apiConfig.baseURL}/api/auth/profile`, editForm, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       await fetchProfile();
       setEditDialogOpen(false);
     } catch (error: any) {
@@ -168,7 +177,11 @@ const Profile: React.FC = () => {
   const handleDeleteAccount = async () => {
     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       try {
-        await axios.delete('/api/users/account');
+        await axios.delete(`${apiConfig.baseURL}/api/users/account`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
         logout();
         navigate('/');
       } catch (error: any) {
