@@ -1,6 +1,7 @@
-// Vercel API route - Simplified version
+// Vercel API route - Full application
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
@@ -25,24 +26,39 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// Root endpoint
+// Serve static files from client build (if it exists)
+app.use(express.static(path.join(__dirname, '../client/build')));
+
+// Root endpoint - serve the React app
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Civic Issue Tracker Backend',
-    status: 'running',
-    endpoints: [
-      '/api/health',
-      '/api/test'
-    ]
-  });
+  // Try to serve the React app, fallback to API info
+  const indexPath = path.join(__dirname, '../client/build/index.html');
+  try {
+    res.sendFile(indexPath);
+  } catch (error) {
+    res.json({ 
+      message: 'Civic Issue Tracker Backend',
+      status: 'running',
+      note: 'Frontend not built yet. Build the client and redeploy.',
+      endpoints: [
+        '/api/health',
+        '/api/test'
+      ]
+    });
+  }
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ 
-    message: 'Route not found',
-    path: req.originalUrl
-  });
+// Catch all handler - serve React app for client-side routing
+app.get('*', (req, res) => {
+  const indexPath = path.join(__dirname, '../client/build/index.html');
+  try {
+    res.sendFile(indexPath);
+  } catch (error) {
+    res.status(404).json({ 
+      message: 'Route not found',
+      path: req.originalUrl
+    });
+  }
 });
 
 module.exports = app;
